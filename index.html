@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>mapTO: Highest Peaks in Ontario</title>
+<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+<script src="https://api.mapbox.com/mapbox-gl-js/v2.0.0/mapbox-gl.js"></script>
+<link href="https://api.mapbox.com/mapbox-gl-js/v2.0.1/mapbox-gl.css" rel="stylesheet" />
+<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com">
+<script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.js"></script>
+<style>
+body { 
+    margin: 0; 
+    padding: 0; 
+}
+    
+#map { 
+    position: absolute; 
+    top: 0; 
+    bottom: 0; 
+    width: 100%; 
+    
+}
+    
+#addInfoBox {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 1000;
+    display: none; 
+}
+
+#addInfoBtn {
+    background: orangered;
+    color:#fff;
+}
+
+.ui.inverted.dimmer {
+    background-color: rgba(255,255,255,.6);
+}
+
+#infoBox {
+    padding:1%;
+    position: relative;
+    z-index:1001;
+    box-sizing: border-box;
+    background:#fff;
+    color:#999;
+    top:20px;
+    left:20px;
+    width:270px;
+    font-size:14px;
+    -webkit-box-shadow: 5px 5px 10px 0px rgba(239,239,239,0.3);
+    -moz-box-shadow: 5px 5px 10px 0px rgba(239,239,239,0.3);
+    box-shadow: 5px 5px 10px 0px rgba(239,239,239,0.3);
+}
+
+#infoBox #closeBtn {
+    position: absolute;
+    top:10px;
+    right:10px;
+}
+
+#infoBox #closeBtn:hover {
+    cursor: pointer;
+}
+
+#infoBox h2 {
+    margin-top:0;
+    max-width:200px;
+    color:#333;
+    font-size: 18px;
+    margin-bottom: 5px;
+}
+
+#infoBox h2 a {
+    text-decoration: none;
+    color:#333;
+}
+
+#infoBox #staticHead h2 {
+    margin-bottom:10px;
+}
+
+
+#peak-desc{
+    height:auto;
+    width:100%;
+    margin-bottom:10%;
+    margin-top:10%;
+}
+
+#note{
+    margin-top:5px;
+    }
+
+
+#infoBox .dropdown {
+    font-weight:bold;
+    color:#555;
+}
+
+#infoBox .ui.buttons {
+    width: 100%;
+}
+
+#infoBox .note {
+    margin-top:5px;
+    margin-bottom: 5px;
+    font-size:12px;
+}
+
+#infoBox  .subtext{
+    font-size:10px;
+        
+    }
+
+#infoBox .note a{
+    color:#999;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+#infoBox .infoBoxIcon {
+    width:30px;
+    vertical-align: middle;
+}
+
+#infoBox #btnCount {
+    font-size: 12px;
+    margin: 10px 0 5px;
+}
+
+#infoBox #staticHold {
+    background: #efefef;
+}
+
+/*#dropdown{
+  margin-bottom: 0%
+}*/
+    
+#tooltipWrap {
+    display: block;
+    position: absolute;
+    top:10px;
+    right:10px;
+    width:80px;
+    padding:5px;
+    border-radius: 10px;
+    color:#fff;
+    z-index:100;
+    opacity: 0;
+    text-align: center;
+    background-color: #fff;
+      -webkit-transition: opacity 0.5s ease-in-out;
+      -moz-transition: opacity 0.5s ease-in-out;
+      -ms-transition: opacity 0.5s ease-in-out;
+      -o-transition: opacity 0.5s ease-in-out;
+}
+
+#tooltip1 p{
+    color: #000;
+    font-size:20px;
+    font-family: 'Roboto', sans-serif
+}
+#text{
+    color: #000;
+    font-size:12px;
+    font-family: 'Roboto', sans-serif
+}
+    
+#Overview{
+    margin-top:5%;
+    }
+
+
+</style>
+</head>
+
+<body>
+    <div id="map"></div>
+
+        <!--Info box on button -->
+        <div id="addInfoBox">
+          <button id="addInfoBtn" class="ui button">
+            Info
+          </button>
+        </div>
+
+    <!--Sidebar-->
+        <div id="infoBox">
+            <div id="contentBox">
+            
+            <!--Close button (X) -->
+            <button id="closeBtn" class="ui icon button">
+                <i class="close icon"></i>
+            </button>
+            
+            <!-- Title -->
+            <h2><a href="link" target="_blank">The Highest Peaks in Ontario</a></h2>
+            <br><p>Select a peak from the dropdown<br>Use control+mouse to rotate view</p>
+              
+            <!--Dropdown Menu -->
+            <div class="ui selection dropdown" id="dropdown" onchange="peakTour()">
+              <input type="hidden" name="gender">
+                <i class="dropdown icon"></i>
+              <div class="default text">Fly to a peak</div>
+              <div class="menu" id="ddList">
+              </div>
+            </div>
+            <div class="ui button" id="Overview">Zoom Out</div>
+            <!--Description -->
+            <div id = "peak-desc"></div>  
+
+            <!--Credits -->
+            <div id="credits">
+                <p class="note">By: <a href="http://www.mapto.ca/" target="_blank" style="color:orangered">MapTO</a></p>
+                <p class="note">Data: <a href="https://www.peakbagger.com/list.aspx?lid=13006" target="_blank">Peakbagger.com</a></p>
+                <p class="subtext">Notes: Peaks are exagerated by factor of 3 for visual effect; Peak heights from peakbagger dont correspond perfectly with elevation contours shown on map</p>
+            </div>
+            </div>
+          </div>
+            <div id = "tooltipWrap">
+                <div id = "tooltip1"></div>
+                <div id = "tooltip2"></div>
+        </div>
+
+
+    
+    
+    
+<script>
+    
+const peaks ={
+"type": "FeatureCollection",
+"name": "peaks25",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+"features": [
+{ "type": "Feature", "properties": { "Rank": 1, "County": "Sudbury District", "Peak": "Ishpatina Ridge", "Elev-M": 693, "Range (Level 4)": "Northern Ontario", "Ascents": 46, "Link": "https:\/\/www.peakbagger.com\/peak.aspx?pid=5959", "Lat": 47.316824, "Lon": -80.748912 }, "geometry": { "type": "Point", "coordinates": [ -80.748912, 47.316824 ] } },
+{ "type": "Feature", "properties": { "Rank": 2, "County": "Thunder Bay", "Peak": "Tower Mountain", "Elev-M": 679, "Range (Level 4)": "Northern Ontario", "Ascents": 6, "Link": "https:\/\/www.peakbagger.com\/peak.aspx?pid=5955", "Lat": 48.308011, "Lon": -90.094438 }, "geometry": { "type": "Point", "coordinates": [ -90.094438, 48.308011 ] } },
+{ "type": "Feature", "properties": { "Rank": 3, "County": "Timiskaming", "Peak": "Ishpatina Ridge North", "Elev-M": 677, "Range (Level 4)": "Northern Ontario", "Ascents": 6, "Link": "https:\/\/www.peakbagger.com\/peak.aspx?pid=18727", "Lat": 47.332806, "Lon": -80.733771 }, "geometry": { "type": "Point", "coordinates": [ -80.733771, 47.332806 ] } },
+{ "type": "Feature", "properties": { "Rank": 4, "County": "Algoma", "Peak": "Ogidaki Mountain", "Elev-M": 665, "Range (Level 4)": "Northern Ontario", "Ascents": 5, "Link": "https:\/\/www.peakbagger.com\/peak.aspx?pid=5961", "Lat": 46.991865, "Lon": -83.984192 }, "geometry": { "type": "Point", "coordinates": [ -83.984192, 46.991865 ] } },
+{ "type": "Feature", "properties": { "Rank": 5, "County": "Nipissing", "Peak": "Southern Ontario High Point", "Elev-M": 578, "Range (Level 4)": "Southern Ontario", "Ascents": 8, "Link": "https:\/\/www.peakbagger.com\/peak.aspx?pid=6547", "Lat": 45.648936, "Lon": -78.257332 }, "geometry": { "type": "Point", "coordinates": [ -78.257332, 45.648936 ] } },
+{ "type": "Feature", "properties": { "Rank": 6, "County": "Haliburton", "Peak": "Manitou Mountain", "Elev-M": 563, "Range (Level 4)": "Southern Ontario", "Ascents": 7, "Link": "https:\/\/www.peakbagger.com\/peak.aspx?pid=18749", "Lat": 45.4450479, "Lon": -78.5832738 }, "geometry": { "type": "Point", "coordinates": [ -78.5832738, 45.4450479 ] } },
+{ "type": "Feature", "properties": { "Rank": 7, "County": "Kenora", "Peak": "Kenora District High Point", "Elev-M": 559, "Range (Level 4)": "Northern Ontario", "Ascents": 3, "Link": "https:\/\/www.peakbagger.com\/peak.aspx?pid=18757", "Lat": 49.11589, "Lon": -91.28758 }, "geometry": { "type": "Point", "coordinates": [ -91.28758, 49.11589 ] } },
+{ "type": "Feature", "properties": { "Rank": 8, "County": "Grey", "Peak": "Grey County High Point", "Elev-M": 544, "Range (Level 4)": "Southern Ontario", "Ascents": 11, "Link": "https:\/\/www.peakbagger.com\/peak.aspx?pid=27271", "Lat": 44.318196, "Lon": -80.319759 }, "geometry": { "type": "Point", "coordinates": [ -80.319759, 44.318196 ] } },
+{ "type": "Feature", "properties": { "Rank": 8, "County": "Simcoe", "Peak": "Niagara Escarpment High Point", "Elev-M": 544, "Range (Level 4)": "Southern Ontario", "Ascents": 13, "Link": "https:\/\/www.peakbagger.com\/peak.aspx?pid=6550", "Lat": 44.37151, "Lon": -80.24903 }, "geometry": { "type": "Point", "coordinates": [ -80.24903, 44.37151 ] } },
+{ "type": "Feature", "properties": { "Rank": 8, "County": "Rainy River", "Peak": "Rainy River District High Point", "Elev-M": 544, "Range (Level 4)": "Northern Ontario", "Ascents": 2, "Link": "https:\/\/www.peakbagger.com\/peak.aspx?pid=18755", "Lat": 48.16695, "Lon": -91.25722 }, "geometry": { "type": "Point", "coordinates": [ -91.25722, 48.16695 ] } },
+{ "type": "Feature", "properties": { "Rank": 11, "County": "Dufferin", "Peak": "Dufferin County High Point", "Elev-M": 542, "Range (Level 4)": "Southern Ontario", "Ascents": 10, "Link": "https:\/\/www.peakbagger.com\/peak.aspx?pid=18744", "Lat": 44.206605, "Lon": -80.280779 }, "geometry": { "type": "Point", "coordinates": [ -80.280779, 44.206605 ] } },
+{ "type": "Feature", "properties": { "Rank": 11, "County": "Hastings", "Peak": "Hastings County High Point", "Elev-M": 542, "Range (Level 4)": "Southern Ontario", "Ascents": 4, "Link": "https:\/\/www.peakbagger.com\/peak.aspx?pid=18944", "Lat": 45.240631, "Lon": -78.128522 }, "geometry": { "type": "Point", "coordinates": [ -78.128522, 45.240631 ] } },
+{ "type": "Feature", "properties": { "Rank": 11, "County": "Muskoka", "Peak": "Muskoka High Point", "Elev-M": 542, "Range (Level 4)": "Southern Ontario", "Ascents": 7, "Link": "https:\/\/www.peakbagger.com\/peak.aspx?pid=18740", "Lat": 45.507446, "Lon": -78.934666 }, "geometry": { "type": "Point", "coordinates": [ -78.934666, 45.507446 ] } },
+{ "type": "Feature", "properties": { "Rank": 14, "County": "Parry Sound", "Peak": "Parry Sound High Point", "Elev-M": 532, "Range (Level 4)": "Southern Ontario", "Ascents": 5, "Link": "https:\/\/www.peakbagger.com\/peak.aspx?pid=34568", "Lat": 45.814887, "Lon": -79.168737 }, "geometry": { "type": "Point", "coordinates": [ -79.168737, 45.814887 ] } },
+{ "type": "Feature", "properties": { "Rank": 15, "County": "Renfrew", "Peak": "Ryans Mountain", "Elev-M": 523, "Range (Level 4)": "Southern Ontario", "Ascents": 11, "Link": "https:\/\/www.peakbagger.com\/peak.aspx?pid=18943", "Lat": 45.430502, "Lon": -77.304499 }, "geometry": { "type": "Point", "coordinates": [ -77.304499, 45.430502 ] } },
+{ "type": "Feature", "properties": { "Rank": 16, "County": "Wellington", "Peak": "Luther Benchmark", "Elev-M": 511, "Range (Level 4)": "Southern Ontario", "Ascents": 9, "Link": "https:\/\/www.peakbagger.com\/peak.aspx?pid=18939", "Lat": 43.897088, "Lon": -80.432239 }, "geometry": { "type": "Point", "coordinates": [ -80.432239, 43.897088 ] } },
+{ "type": "Feature", "properties": { "Rank": 17, "County": "Sudbury City", "Peak": "Wolf Lake Mountain", "Elev-M": 504, "Range (Level 4)": "Northern Ontario", "Ascents": 6, "Link": "https:\/\/www.peakbagger.com\/peak.aspx?pid=27273", "Lat": 46.862654, "Lon": -80.661158 }, "geometry": { "type": "Point", "coordinates": [ -80.661158, 46.862654 ] } },
+{ "type": "Feature", "properties": { "Rank": 18, "County": "Lennox and Addington", "Peak": "Moger Pond Peak", "Elev-M": 501, "Range (Level 4)": "Southern Ontario", "Ascents": 5, "Link": "https:\/\/www.peakbagger.com\/peak.aspx?pid=18942", "Lat": 45.1613123, "Lon": -77.3061561 }, "geometry": { "type": "Point", "coordinates": [ -77.3061561, 45.1613123 ] } },
+{ "type": "Feature", "properties": { "Rank": 19, "County": "Peel", "Peak": "Peel High Point", "Elev-M": 494, "Range (Level 4)": "Southern Ontario", "Ascents": 5, "Link": "https:\/\/www.peakbagger.com\/peak.aspx?pid=18745", "Lat": 43.928461, "Lon": -80.031754 }, "geometry": { "type": "Point", "coordinates": [ -80.031754, 43.928461 ] } },
+{ "type": "Feature", "properties": { "Rank": 20, "County": "Cochrane", "Peak": "Ghost Range Peak", "Elev-M": 488, "Range (Level 4)": "Northern Ontario", "Ascents": 7, "Link": "https:\/\/www.peakbagger.com\/peak.aspx?pid=27252", "Lat": 48.53883, "Lon": -79.835157 }, "geometry": { "type": "Point", "coordinates": [ -79.835157, 48.53883 ] } },
+{ "type": "Feature", "properties": { "Rank": 21, "County": "Waterloo", "Peak": "Waterloo High Point", "Elev-M": 438, "Range (Level 4)": "Southern Ontario", "Ascents": 8, "Link": "https:\/\/www.peakbagger.com\/peak.aspx?pid=27248", "Lat": 43.529167, "Lon": -80.722802 }, "geometry": { "type": "Point", "coordinates": [ -80.722802, 43.529167 ] } },
+{ "type": "Feature", "properties": { "Rank": 22, "County": "Peterborough", "Peak": "Peterborough County High Point", "Elev-M": 434, "Range (Level 4)": "Southern Ontario", "Ascents": 5, "Link": "https:\/\/www.peakbagger.com\/peak.aspx?pid=27264", "Lat": 44.854346, "Lon": -78.185404 }, "geometry": { "type": "Point", "coordinates": [ -78.185404, 44.854346 ] } },
+{ "type": "Feature", "properties": { "Rank": 23, "County": "Perth", "Peak": "Perth County High Point", "Elev-M": 427, "Range (Level 4)": "Southern Ontario", "Ascents": 8, "Link": "https:\/\/www.peakbagger.com\/peak.aspx?pid=27247", "Lat": 43.399578, "Lon": -80.830165 }, "geometry": { "type": "Point", "coordinates": [ -80.830165, 43.399578 ] } },
+{ "type": "Feature", "properties": { "Rank": 24, "County": "Frontenac", "Peak": "Evergreen Mountain", "Elev-M": 417, "Range (Level 4)": "Southern Ontario", "Ascents": 7, "Link": "https:\/\/www.peakbagger.com\/peak.aspx?pid=18941", "Lat": 45.13849, "Lon": -76.916691 }, "geometry": { "type": "Point", "coordinates": [ -76.916691, 45.13849 ] } },
+{ "type": "Feature", "properties": { "Rank": 25, "County": "Halton", "Peak": "Halton High Point", "Elev-M": 414, "Range (Level 4)": "Southern Ontario", "Ascents": 14, "Link": "https:\/\/www.peakbagger.com\/peak.aspx?pid=18937", "Lat": 43.656427, "Lon": -80.054531 }, "geometry": { "type": "Point", "coordinates": [ -80.054531, 43.656427 ] } }
+    ]
+    }
+    
+
+var toolTipTimeOut;
+
+// console.log(peaks)
+
+mapboxgl.accessToken = 'pk.eyJ1IjoidHdlYXRoZXJidXJuIiwiYSI6IllqeWNoS28ifQ.LX7mJDglVdZODqd25Z8aeg';
+
+//Set the bounds of the map to the area surrounding Aldershot High School
+//var bounds = [[-79.860,43.296],[-79.840,43.310],]
+
+//Add a new map
+var map = new mapboxgl.Map({
+    container: 'map', // container id
+    style: 'mapbox://styles/tweatherburn/cklqp6d740ue117pbp71wibqq', // style URL
+    center: [-91.405,49.876], // starting position [lng, lat]
+    zoom: 3.8, 
+    //pitch: 0,
+    //bearing: -93.60
+    // starting zoom
+    //maxZoom: 18,
+    //minZoom: 15,
+    //maxBounds: bounds
+});
+
+//Add navigation controls at bottom right and scale at bottom left
+var nav = new mapboxgl.NavigationControl();
+map.addControl(nav, 'bottom-right');
+map.addControl(new mapboxgl.ScaleControl({position: 'bottom-left'}));
+
+map.on('load', function() {
+
+//ADD SOURCES-----------------------------
+    //Mapbox DEM
+   /* map.addSource('mapbox-dem', {
+        'type': 'raster-dem',
+        'url': 'mapbox://mapbox.mapbox-terrain-dem-v1',
+        'tileSize': 512,
+        'maxzoom': 14
+        });*/
+
+    //Countours
+    map.addSource('contours-src', {
+        'type': 'vector',
+        'url': 'mapbox://tweatherburn.5pl0mjot'
+    });
+    //peaks
+   /* map.addSource('peaks-src', {
+        'type': 'vector',
+        'url': 'mapbox://tweatherburn.41pm0gtw'
+    })*/
+
+//Add Layers-----------------------------------------------------------------------
+
+  /*  // DEM - a terrain layer with exaggerated height
+    map.setTerrain({ 'source': 'mapbox-dem', 'exaggeration': 3 });*/
+    
+    
+    //Invisible countour layer for hover function
+    map.addLayer({
+        'id': 'contours',
+        'type': 'line',
+        'source': 'contours-src',
+        'source-layer':'PeaksContours3m',
+        'layout': {
+            'visibility': 'visible'
+        },
+        'paint': {
+            'line-width': 8,
+            'line-color': '#fff',
+            'line-opacity': 0
+            }
+    });
+
+    //same contour layer, turns on when hovered over
+    map.addLayer({
+        'id': 'contours_hv',
+        'type': 'line',
+        'source': 'contours-src',
+        'source-layer':'PeaksContours3m',
+        'paint': {
+            'line-width': 1.25,
+            'line-color': 'orangered',
+            'line-opacity': 0.9
+            },
+        'filter': [ 'all',
+            [ '==', 'ID', 'NONE' ] // start with a filter that doesn't select anything
+            ]
+    });
+
+    //Query Contour Value and put in Tooltip
+    map.on('mousemove', 'contours', e => {
+        // stopFadeOut();
+        if (e.features.length) {
+            map.getCanvas().style.cursor = 'crosshair';
+            
+            document.getElementById('tooltipWrap').style.opacity = 1;
+            document.getElementById('tooltip1').innerHTML = "<p>"+e.features[0].properties.ELEV+" m</p>"; //show name and value in sidebar
+            //document.getElementById('tooltip2').innerHTML = "<p>"+features[0].properties.OBJECTID_1+"</p>"; //show name and value in sidebar
+            //Set hover ID
+            //console.log(features[0].properties.ID)
+            map.setFilter('contours_hv', ['==', ['get', 'ID'], e.features[0].properties.ID]);
+        }
+    });
+
+    map.on('mouseleave', 'contours', e => {
+        // fadeOutTooltip();
+    });
+
+    buildList();
+
+});
+//End onLoad Function
+
+function fadeOutTooltip() {
+  toolTipTimeOut = setTimeout(function(){document.getElementById('tooltipWrap').style.opacity = 0}, 500);
+}
+
+function stopFadeOut() {
+  clearTimeout(toolTipTimeOut);
+}
+
+    
+//Show/Hide Infobox functionality    
+ $('#closeBtn').click(function() {
+  document.getElementById('infoBox').style.display = 'none';
+  document.getElementById('addInfoBox').style.display = 'block';
+});
+
+$('#addInfoBtn').click(function() {
+  document.getElementById('infoBox').style.display = 'block';
+  document.getElementById('addInfoBox').style.display = 'none';
+});
+
+//Build Dropdown List
+function buildList() {
+    //Dropdown - change to HTML list, write for loop to create list items from json property array (features)    
+    // console.log('rank', peaks.features[0].properties.Rank);
+    // console.log('peak num', peaks.features.length);
+
+    let ddListText = "";
+    // let peakCount = peaks.features.length;
+    for (var i = 0; i < peaks.features.length; i++) {
+        //add in an if satement so that if the peak is ishpatina ridge, it adds selected attribute
+       
+        ddListText +=  "<div class='item' data-value='"+peaks.features[i].properties.Peak+"'>"+peaks.features[i].properties.Rank+" - "+peaks.features[i].properties.Peak+"</div>"   
+       
+        //console.log(peaks.features[i].properties.Peak);
+    }
+    // console.log(ddList)
+    document.getElementById("ddList").innerHTML = ddListText;
+}
+
+function peakTour(){
+    let peakValue = $('.selection.dropdown').dropdown('get value'); //Grab selected value from dropdown
+    console.log(peakValue)
+    for (var i = 0; i < peaks.features.length; i++) {
+        if (peaks.features[i].properties.Peak == peakValue){
+            document.getElementById('peak-desc').innerHTML = "<div class='peakInfo'>Elevation: "+peaks.features[i].properties["Elev-M"]+" m<br>This is the "+ peaks.features[i].properties["Rank"]+" highest peak in Ontario<br><br>County: "+peaks.features[i].properties.County+"<br>Range: "+peaks.features[i].properties["Range (Level 4)"]+"<br><br><i class='info circle icon'></i><a href="+peaks.features[i].properties.Link+" target='_blank'>More information</a><br><i class='crosshairs icon'></i><a href='http://www.google.com/maps/place/"+peaks.features[i].properties.Lat+","+peaks.features[i].properties.Lon+"' target='_blank'>Google Maps</a></div>"
+            //console.log(peaks.features[i].properties.County)
+            //console.log(peaks.features[i].properties.Rank)
+            //console.log(peaks.features[i].properties.Link)
+            let lat = peaks.features[i].properties.Lat
+            let lon = peaks.features[i].properties.Lon
+            map.flyTo({
+              center: [lon,lat],
+              zoom:14,
+              pitch: 65,
+              bearing: 0,
+              speed:0.75,
+              curve:1.5
+            });
+        }
+        /*else{
+            map.flyTo({
+              center: [-95.405,48.876],
+              zoom:44,
+              //pitch: 50,
+              //bearing: -93.60,
+              speed:0.5,
+              curve:1.5
+            });
+        }*/
+    }
+}    
+    
+$('.ui.dropdown')
+  .dropdown()
+;
+
+$('#Overview').click(function() {
+  map.flyTo({
+    center: [-91.405,49.876], // starting position [lng, lat]
+    zoom: 3.8, 
+    pitch: 0,
+    bearing:0
+  })
+});
+
+    
+    
+</script>
+
+</body>
+</html>
