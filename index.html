@@ -89,8 +89,8 @@ body {
 #peak-desc{
     height:auto;
     width:100%;
-    margin-bottom:10%;
-    margin-top:10%;
+    margin-bottom:1%;
+    
 }
 
 #note{
@@ -112,6 +112,9 @@ body {
     margin-bottom: 5px;
     font-size:12px;
 }
+#credits{
+    margin-top:8%;
+    }
 
 #infoBox  .subtext{
     font-size:10px;
@@ -129,14 +132,6 @@ body {
     vertical-align: middle;
 }
 
-#infoBox #btnCount {
-    font-size: 12px;
-    margin: 10px 0 5px;
-}
-
-#infoBox #staticHold {
-    background: #efefef;
-}
 
 /*#dropdown{
   margin-bottom: 0%
@@ -426,7 +421,10 @@ function peakTour(){
     console.log(peakValue)
     for (var i = 0; i < peaks.features.length; i++) {
         if (peaks.features[i].properties.Peak == peakValue){
-            document.getElementById('peak-desc').innerHTML = "<div class='peakInfo'>Elevation: "+peaks.features[i].properties["Elev-M"]+" m<br>This is the "+ peaks.features[i].properties["Rank"]+" highest peak in Ontario<br><br>County: "+peaks.features[i].properties.County+"<br>Range: "+peaks.features[i].properties["Range (Level 4)"]+"<br><br><i class='info circle icon'></i><a href="+peaks.features[i].properties.Link+" target='_blank'>More information</a><br><i class='crosshairs icon'></i><a href='http://www.google.com/maps/place/"+peaks.features[i].properties.Lat+","+peaks.features[i].properties.Lon+"' target='_blank'>Google Maps</a></div>"
+            let peakDesc= document.getElementById('peak-desc')
+            peakDesc.innerHTML = "<div class='peakInfo'>Elevation: "+peaks.features[i].properties["Elev-M"]+" m<br>This is the "+ peaks.features[i].properties["Rank"]+" highest peak in Ontario<br><br>County: "+peaks.features[i].properties.County+"<br>Range: "+peaks.features[i].properties["Range (Level 4)"]+"<br><br><i class='info circle icon'></i><a href="+peaks.features[i].properties.Link+" target='_blank'>More information</a><br><i class='crosshairs icon'></i><a href='http://www.google.com/maps/place/"+peaks.features[i].properties.Lat+","+peaks.features[i].properties.Lon+"' target='_blank'>Google Maps</a></div>"
+            peakDesc.style.marginTop="5%"
+            
             //console.log(peaks.features[i].properties.County)
             //console.log(peaks.features[i].properties.Rank)
             //console.log(peaks.features[i].properties.Link)
@@ -466,6 +464,7 @@ $('#Overview').click(function() {
     bearing:0
   })
   $('#dropdown').dropdown('clear');
+  document.getElementById('peak-desc').innerHTML = ""    
 });
 
     
