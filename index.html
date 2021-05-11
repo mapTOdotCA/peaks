@@ -422,7 +422,7 @@ function peakTour(){
     for (var i = 0; i < peaks.features.length; i++) {
         if (peaks.features[i].properties.Peak == peakValue){
             let peakDesc= document.getElementById('peak-desc')
-            peakDesc.innerHTML = "<div class='peakInfo'>Elevation: "+peaks.features[i].properties["Elev-M"]+" m<br>Rank: <b>"+ peaks.features[i].properties["Rank"]+"</b><br>County: <b>"+peaks.features[i].properties.County+"</b><br>Range: <b>"+peaks.features[i].properties["Range (Level 4)"]+"</b><br><br><i class='info circle icon'></i><a href="+peaks.features[i].properties.Link+" target='_blank'>More information</a><br><i class='crosshairs icon'></i><a href='http://www.google.com/maps/place/"+peaks.features[i].properties.Lat+","+peaks.features[i].properties.Lon+"' target='_blank'>Google Maps</a></div>"
+            peakDesc.innerHTML = "<div class='peakInfo'>Elevation: <b>"+peaks.features[i].properties["Elev-M"]+" m</b><br>Rank: <b>"+ peaks.features[i].properties["Rank"]+"</b><br>County: <b>"+peaks.features[i].properties.County+"</b><br>Range: <b>"+peaks.features[i].properties["Range (Level 4)"]+"</b><br><br><i class='info circle icon'></i><a href="+peaks.features[i].properties.Link+" target='_blank'>More information</a><br><i class='crosshairs icon'></i><a href='http://www.google.com/maps/place/"+peaks.features[i].properties.Lat+","+peaks.features[i].properties.Lon+"' target='_blank'>Google Maps</a></div>"
             peakDesc.style.marginTop="5%"
             
             //console.log(peaks.features[i].properties.County)
