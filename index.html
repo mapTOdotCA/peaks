@@ -211,10 +211,12 @@ body {
               <div class="menu" id="ddList">
               </div>
             </div>
-            <div class="ui button" id="Overview">Zoom Out</div>
-            <!--Description -->
+            
+            
             <div id = "peak-desc"></div>  
-
+            
+            <!--Zoom Out -->
+            <div class="ui button" id="Overview">Zoom Out</div>
             <!--Credits -->
             <div id="credits">
                 <p class="note">By: <a href="http://www.mapto.ca/" target="_blank" style="color:orangered">MapTO</a></p>
@@ -463,6 +465,7 @@ $('#Overview').click(function() {
     pitch: 0,
     bearing:0
   })
+  $('#dropdown').dropdown('clear');
 });
 
     
